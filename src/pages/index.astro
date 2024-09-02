@@ -1,16 +1,52 @@
 ---
+import BaseLayout from '../layouts/BaseLayout.astro'
 
+import { getSession } from 'auth-astro/server'
+
+const session = await getSession(Astro.request)
 ---
 
-<html lang="en">
-	<head>
-		<meta charset="utf-8" />
-		<link rel="icon" type="image/svg+xml" href="/favicon.svg" />
-		<meta name="viewport" content="width=device-width" />
-		<meta name="generator" content={Astro.generator} />
-		<title>Astro</title>
-	</head>
-	<body>
-		<h1>Astro</h1>
-	</body>
-</html>
+<BaseLayout>
+  <p class="text-xl pb-10">
+    This web-app just fetches your RC user-profile and displays it as a lil'
+    card.
+  </p>
+  <div class="flex flex-row space-x-1 pb-8">
+    <div class="min-w-40 bg-gray-100 p-2 rounded-sm">
+      {session ? session.user?.name : 'Anonymous'}
+    </div>
+    <button
+      class="px-2 py-1 bg-green-400 text-white text-sm min-w-20 rounded-sm"
+      id="login">Login</button
+    >
+    <button
+      class="px-2 py-1 bg-red-400 text-white text-sm min-w-20 rounded-sm"
+      id="logout">Logout</button
+    >
+  </div>
+  {
+    session && (
+      <div class="bg-blue-50 p-3 flex flex-row space-x-3">
+        <img class="w-20 h-20" src={session.user?.image} />
+        <div class="pt-1">
+          <p>Name: {session.user?.name}</p>
+          <p>Email: {session.user?.email}</p>
+        </div>
+      </div>
+    )
+  }
+  <p class="text-xl">
+    Once you're logged in, you should visit the page below, it's very secret!
+  </p>
+  <p class="text-xl">
+    <a class="text-blue-500 underline" href="/protected">/protected</a>
+  </p>
+</BaseLayout>
+
+<script>
+  const { signIn, signOut } = await import('auth-astro/client')
+  const loginButton = document.querySelector('#login') as HTMLButtonElement
+  const logoutButton = document.querySelector('#logout') as HTMLButtonElement
+  loginButton.onclick = () => signIn('recurse-center')
+  logoutButton.onclick = () => signOut()
+</script>
